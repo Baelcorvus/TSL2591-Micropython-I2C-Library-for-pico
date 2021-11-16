@@ -18,7 +18,7 @@ If no address is given the default of 0x29 is used.
         from I2C_bus_device import I2CDevice
         import TSL2591
 ```
-    then define the I2C bus the device is attached to:
+then define the I2C bus the device is attached to:
 ```python
         sdaPIN=machine.Pin(0)
         sclPIN=machine.Pin(1)
