@@ -49,10 +49,10 @@ if (ard_attached): ard = Ard_obj.ard_obj(i2c, ard_addr)
 if (tsl_attached): tsl = TSL2591.TSL2591(i2c, lux_addr)
 if (si_attached):
     si = SI7021.Si7021(i2c, temp_addr)
-    print(si.serial, si.identifier)
+    print(si.identifier)
 if (sht_attached):
     sht = shtc3.SHTC3(i2c, sht_addr)
-    print(sht._chip_id, sht.device.i2c_error, hex(sht.device.i2c_error_device))
+    print(sht._chip_id)
 
 'here we define an external LED (on pin 28) and a button (on pin 20) so we can communicate their states to the arduino.'
 led = machine.Pin(28, Pin.OUT)
