@@ -1,5 +1,5 @@
 """
-Driver for the SL2591 precision light sensor in micropython using an I2C bus device for the raspberry pi pico microcontroller
+Driver for the TSL2591 precision light sensor in micropython using an I2C bus device for the raspberry pi pico microcontroller
 Requires the presence of the I2C_bus_device librrary from:
 
 https://github.com/Baelcorvus/I2C_Busdevice
