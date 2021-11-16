@@ -11,7 +11,6 @@ sensors put a # infront of a library
 '''
 from machine import Pin, I2C
 from time import sleep
-from I2C_bus_device import I2CDevice
 import TSL2591
 import SI7021
 import Ard_obj

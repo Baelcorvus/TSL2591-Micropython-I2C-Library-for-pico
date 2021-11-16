@@ -57,7 +57,6 @@ in micropython using a I2C bus device.
 '''first we import the libraries'''
 from machine import Pin, I2C
 from time import sleep
-from I2C_bus_device import I2CDevice
 import TSL2591
 
 '''Then we define the physical I2C that the sensor is connected to''' 
@@ -92,7 +91,7 @@ while True:
     print("Infrared: {}  ".format(infrared), end = '')
     print("Visible: {}  ".format(visible), end = '')
     print("Full Spectrum: {}  ".format(full_spectrum))
-    sleep(0.5)
+    sleep(0.5)                                           #read every half second - not necessary ofr the bus, just cosmetic, omit as needed
 ```
 This shows how to import, define and use the properties of the sensor.
 
