@@ -27,7 +27,7 @@ then define the I2C bus the device is attached to:
 
         i2c=machine.I2C(i2c_bus, sda=sdaPIN, scl=sclPIN, freq=400000)
 ```    
-This Will define an I2C bus on pin 0 for SDA and pin 1 for SCL. The actual pins will need to be changed
+This will define an I2C bus on pin 0 for SDA and pin 1 for SCL. The actual pins will need to be changed
 to the specifics of your project. The i2c_bus will be designated by the pins used. A pinout
 of your pico will call the pins sda0 and scl0 for bus 0 and sda1 and scl1 for bus 1
 
@@ -46,7 +46,7 @@ so you can read the light using these attributes:
 ```
 
 An example program is included that simply reads and prints these values (TSL_example.py) and one that shows how you 
-intgrate the sensor with other I2C bus devices.
+can integrate the sensor with other I2C bus devices.
 
 ```python
 '''
@@ -96,9 +96,10 @@ while True:
 ```
 This shows how to import, define and use the properties of the sensor.
 
-A note on error checking. 
+A note on error checking.
+
 When a sensor object is intailised it performs a check to see if the device is present. If it is it sets the attribue .device.i2c_error to 0, so in our example it would
-be `tsl.device.i2c_error'. 
+be `tsl.device.i2c_error`. 
 Checking this value before taking the reading is a way of ensuring the value read is correct.
 If no device is prsent a value of -1 will be written to .device.i2c_error and the device address written to .device.i2c_error_device.
 In the example file, if the device is not detected, the values are set to zero, a message is printed to tell you there is no device and the object is reinitialised to try to look again.
