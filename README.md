@@ -90,7 +90,7 @@ while True:
     print("Infrared: {}  ".format(infrared), end = '')
     print("Visible: {}  ".format(visible), end = '')
     print("Full Spectrum: {}  ".format(full_spectrum))
-    sleep(0.5)                                           #read every half second - not necessary ofr the bus, just cosmetic, omit as needed
+    sleep(0.5)                                           #read every half second - not necessary for the bus, just cosmetic, omit as needed
 ```
 This shows how to import, define and use the properties of the sensor.
 
