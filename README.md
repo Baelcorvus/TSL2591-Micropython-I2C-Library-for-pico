@@ -98,15 +98,42 @@ while True:
 ```
 This shows how to import, define and use the properties of the sensor.
 
-***A note on error checking.***
-If an I/O error occurs during transmission the buss driver will reaise an OS Error exception. We can catch this error with `try:` and except `OSError:`
-for example if we read the sensor we can do this:
+The other example is a simple program that incorportates this code into a multiple sensor situation.
+
+***A note on I/O errors***
+if an I/O error occuse durig either intialisation of the object or during a read of the sensor you can use `try:` and `except OSError:` 
+to catch it and deal with it.
+So, during intialisation we use:
 ```python
 try:
-        lux = tsl.lux
+    tsl = TSL2591.TSL2591(i2c, lux_addr)
+    chip_id = tsl._chip_id
+    if (chip_id== 0x50):
+        identifier = "TSL2591"
+    else:
+        identifier = "other sensor"
 except OSError:
-        lux = 0
-        print("I/O error")
+    print ("TSL2591 not present")
+else:
+    print('{} is present'.format(identifier))
 ```
+The bus device responds with an error if no device is present with the address specified. If it finds a device at the address then you can read the chip id from the TSL2591
+with `tsl._chip_id`. A TSL2591 will respond with 0x50.
 
-The other example is a simple program that incorportates this code into a multiple sensor situation.
+Once we hace established a TSL2591 device is present, future read and writes should occur without error, but in the case of a line dropping you can catch an error on a read:
+```python
+try:
+    lux = tsl.lux                                              #read the lux value
+    infrared = tsl.infrared                                    #read the infrared value
+    visible = tsl.visible                                      #read the visible value
+    full_spectrum = tsl.full_spectrum                          #read the full_spectrum value
+                                                               #the most useful value for many projects is the lux value.
+    print("Lux: {}  ".format(lux), end = '')                   
+    print("Infrared: {}  ".format(infrared), end = '')
+    print("Visible: {}  ".format(visible), end = '')
+    print("Full Spectrum: {}  ".format(full_spectrum), end = '\r')
+except OSError:
+    print("TSL2591 I/O Error - retrying connection")
+```
+Here if we get an I/O error reading the sensor wwe complain about it and on the next loop the program will attempt to
+read the device again.
