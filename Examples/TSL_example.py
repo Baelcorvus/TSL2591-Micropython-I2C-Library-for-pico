@@ -1,6 +1,6 @@
 '''
 Code to use a TSL2591 high precision light sensor with a pico microcontroller
-in micropython using a I2C bus device.
+in micropython using am I2C bus device.
 '''
 
 '''first we import the libraries'''
@@ -44,4 +44,4 @@ while True:
     except OSError:
         print("TSL2591 I/O Error - retrying connection")
 
-    sleep(0.1)                                           #read every half second - not necessary ofr the bus, just cosmetic, omit as needed
+    sleep(0.1)                                           #read every half second - not necessary for the bus, just cosmetic, omit as needed
