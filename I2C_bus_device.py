@@ -35,27 +35,23 @@ class I2CDevice:
     def __init__(self, i2c, device_address, probe=True): #routine to initialize the device. If no probe=False is sent  
         self.i2c = i2c                                   #it is checked whether the deice exxists. If not an error is generated.
         self.device_address = device_address
-        self.i2c_error = 0
-        self.i2c_error_device = 0
         if probe:
             self.__probe_for_device()
             
     def readinto(self, buf, start=0, end=None):    #Function to read the data from the I2C device. The data will be put into
         if end is None:                               #the variable speciified by the calling rrutine.
             end = len(buf)                            #The buffer ssould be a bytearray. So to call we might use:
-        try:                                                      #data = byetarray()
-            self.i2c.readfrom_into(self.device_address, buf)      #device.readinto(data)
-            buf = buf[start:end]                      #if a start and/or end vvalue is specified then this data will be a subset of the aquired data.
-        except OSError:
-            self.i2c_error = -2                       #if an error occurs on the bus then device.i2c_error is set to -2
+                                                      #data = byetarray()
+        self.i2c.readfrom_into(self.device_address, buf)      #device.readinto(data)
+        buf = buf[start:end]                      #if a start and/or end vvalue is specified then this data will be a subset of the aquired data.
+
     
     def write(self, buf, start=0, end=None):       #Function to write data to the I2C device. 
         if end is None:                               #put the data you wish to send in bytearray and call device.write, for example,
             end = len(buf)                                            #message = "hello"
-        try:                                                          #data = bytearray(message)
-            self.i2c.writeto(self.device_address, buf[start:end])     #device.write (data)
-        except OSError:
-            self.i2c_error = -2                       #if an error occurs on the bus then device.i2c_error is set to -2
+                                                          #data = bytearray(message)
+        self.i2c.writeto(self.device_address, buf[start:end])     #device.write (data)
+
     
     def write_then_readinto(                          #Function that writes to an I2C device, waits for a time and then reads he device.
         self,                                         #This may be useful if a device requires a command before sending the correct data.
@@ -67,7 +63,7 @@ class I2CDevice:
         in_start=0,                                               #out_buf = bytearray(cmd)
         in_end=None                                               #in_buf = bytearray()
     ):                                                            #delay = 0.2
-        try:                                                      #device.write_then_readinto(out_buf, in_buf, delay)
+                                                      #device.write_then_readinto(out_buf, in_buf, delay)
             if out_end is None:
                 out_end = len(out_buffer)
             if in_end is None:
@@ -77,8 +73,6 @@ class I2CDevice:
             self.i2c.readfrom_into(self.device_address, in_buffer)
             in_buffer = in_buffer[in_start:in_end]
             
-        except OSError:
-            setattr(I2CDevice, 'error', -2)           #if an error occurs on the bus then device.i2c_error is set to -2
 
     def __probe_for_device(self):                            #Function to check if the device is present. If no device answers then
         try:                                                 #device.i2c_error is set to -1 and device.i2c_error_device is set to the device address that is not present.
@@ -89,6 +83,10 @@ class I2CDevice:
                 result = bytearray(1)
                 self.i2c.readfrom_into(self.device_address, result)
             except OSError:
-                self.i2c_error = -1
-                self.i2c_error_device = self.device_address
-#                raise ValueError("No I2C device at address: 0x%x" % self.device_address) #enable this line if you wish the execution to stop if device is not present.
+                #raise ValueError("No I2C device at address: 0x%x" % self.device_address) #enable this line if you wish the execution to stop if device is not present.
+                return
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False

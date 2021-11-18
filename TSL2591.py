@@ -97,7 +97,8 @@ class TSL2591:
         self._gain = 0
         self.device = I2CDevice(i2c, address)
         # Verify the chip ID.
-        if self._read_u8(_TSL2591_REGISTER_DEVICE_ID) != 0x50:
+        self._chip_id = self._read_u8(_TSL2591_REGISTER_DEVICE_ID)
+        if self._chip_id != 0x50:
             raise RuntimeError("Failed to find TSL2591, check wiring!")
         # Set default gain and integration times.
         self.gain = GAIN_MED
@@ -108,24 +109,30 @@ class TSL2591:
     def _read_u8(self, address):
         # Read an 8-bit unsigned value from the specified 8-bit address.
         # Make sure to add command bit to read request.
-        self._BUFFER[0] = (_TSL2591_COMMAND_BIT | address) & 0xFF
-        self.device.write_then_readinto(self._BUFFER, self._BUFFER, out_end=1, in_end=1)
+        with self.device as i2c:
+            # Make sure to add command bit to read request.
+            self._BUFFER[0] = (_TSL2591_COMMAND_BIT | address) & 0xFF
+            i2c.write_then_readinto(self._BUFFER, self._BUFFER, out_end=1, in_end=1)
         return self._BUFFER[0]
 
     def _read_u16LE(self, address):
         # Read a 16-bit little-endian unsigned value from the specified 8-bit
         # address.
         # Make sure to add command bit to read request.
-        self._BUFFER[0] = (_TSL2591_COMMAND_BIT | address) & 0xFF
-        self.device.write_then_readinto(self._BUFFER, self._BUFFER, out_end=1, in_end=2)
+        with self.device as i2c:
+            # Make sure to add command bit to read request.
+            self._BUFFER[0] = (_TSL2591_COMMAND_BIT | address) & 0xFF
+            i2c.write_then_readinto(self._BUFFER, self._BUFFER, out_end=1, in_end=2)
         return (self._BUFFER[1] << 8) | self._BUFFER[0]
 
     def _write_u8(self, address, val):
         # Write an 8-bit unsigned value to the specified 8-bit address.
         # Make sure to add command bit to write request.
-        self._BUFFER[0] = (_TSL2591_COMMAND_BIT | address) & 0xFF
-        self._BUFFER[1] = val & 0xFF
-        self.device.write(self._BUFFER, end=2)
+        with self.device as i2c:
+            # Make sure to add command bit to write request.
+            self._BUFFER[0] = (_TSL2591_COMMAND_BIT | address) & 0xFF
+            self._BUFFER[1] = val & 0xFF
+            i2c.write(self._BUFFER, end=2)
 
     def enable(self):
         """Put the device in a fully powered enabled mode."""

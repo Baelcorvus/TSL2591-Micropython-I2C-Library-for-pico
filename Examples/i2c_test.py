@@ -35,8 +35,7 @@ sht_addr = 0x70
 ard_attached = True
 tsl_attached = True
 si_attached = True
-sht_attached = False
-
+sht_attached = True
 '''
 now we create and intialise the objects.
 ard will now always talk to the arduino slave, and similarly
@@ -44,14 +43,52 @@ tsl will always communicate with the tsl2591 light sensor,
 si will always communicate with the si7021 sensor and
 sht will always talk to the shtc3 sensor
 '''
-if (ard_attached): ard = Ard_obj.ard_obj(i2c, ard_addr)
-if (tsl_attached): tsl = TSL2591.TSL2591(i2c, lux_addr)
+if (ard_attached):
+    try:
+        ard = Ard_obj.ard_obj(i2c, ard_addr)
+    except OSError:
+        print('Arduino is not present')
+        ard_attached = False
+    else:
+        print("Arduino is present")
+        
+if (tsl_attached):
+    try:
+        tsl = TSL2591.TSL2591(i2c, lux_addr)
+        chip_id = tsl._chip_id
+        if (chip_id== 0x50):
+            identifier = "TSL2591"
+        else:
+            identifier = "other sensor"
+    except OSError:
+        print ("TSL2591 not present")
+        tsl_attached = False
+    else:
+        print('{} is present'.format(identifier))
+        
 if (si_attached):
-    si = SI7021.Si7021(i2c, temp_addr)
-    print(si.identifier)
+    try:
+        si = SI7021.SI7021(i2c, temp_addr)
+        serial, identifier = si._get_device_info()
+    except OSError:
+        print ("SI7021 not present")
+        si_attached = False
+    else:
+        print('{} is present'.format(identifier))
+        
 if (sht_attached):
-    sht = shtc3.SHTC3(i2c, sht_addr)
-    print(sht._chip_id)
+    try:
+        sht = shtc3.SHTC3(i2c, sht_addr)
+        chip_id = sht._chip_id
+        if (chip_id == 0x807):
+            identifier = "SHTC3"
+        else:
+            identifier = "other sensor"
+    except OSError:
+        print ("SHTC3 not present")
+        sht_attached = False
+    else:
+        print('{} is present'.format(identifier))
 
 'here we define an external LED (on pin 28) and a button (on pin 20) so we can communicate their states to the arduino.'
 led = machine.Pin(28, Pin.OUT)
@@ -60,49 +97,44 @@ led.low()
 but2 = Pin(20, Pin.IN, Pin.PULL_UP)
 
 
-while True:    
+while True:
     if (ard_attached):       #if we have the arduino attached and it has been found send the button state and receive the arduino button state
-        if (ard.device.i2c_error == 0):
+        try:
             button = ard.read_write(but2.value())
             if (button == 1):
                 led.high()
             else:
                 led.low()
-        else:                #this will be triggered if the arduino is supposed to be on the bus, but no adrino is found'
-            print("no ardino")
-            print(ard.device.i2c_error, hex(ard.device.i2c_error_device))
-            ard = Ard_obj.ard_obj(i2c, ard_addr)    #reinitialise the object to look again'
- 
+        except OSError:      #if we get an error during I/O retry the connection
+            print("adrduino slave I/O Error - retrying")
+            
     if(tsl_attached):        #if a TSL2591 light sensor is attached and had been found read the lux value
-        if(tsl.device.i2c_error == 0):
+        try:
             lux = tsl.lux
             print("lux: {}  ".format(lux), end = '')
-        else:                #if the TSL2591 is attached but not been found, report this and look again.
+        except OSError:      #if we get an error during I/O retry the connection
             lux = 0
-            print("no lux")
-            print(tsl.device.i2c_error,hex( tsl.device.i2c_error_device))
-            tsl = TSL2591.TSL2591(i2c, lux_addr)
-    if(si_attached):
-        if(si.device.i2c_error == 0):  #if an si7021 temperature and humidity sensor is present read both values.
+            print("TSL2591 I/O Error - retrying")
+        
+    if(si_attached):        #if a SI7021 temperatue and humidity sensor is present read both values.
+        try:
             temperature, humidity = si.measurments 
             print("temperature: {}  Relative_humidity {}  ".format(temperature, humidity), end = '')
-        else:                          #if no SI7021 detected then complain and reinitialise the sensor.
-            temperature = 0 
+        except OSError:      #if we get an error during I/O retry the connection
+            temperature = 0
             humidity = 0
-            print("no temp")    
-            print(si.device.i2c_error, hex(si.device.i2c_error_device))
-            si = SI7021.Si7021(i2c, temp_addr)
-    if(sht_attached):                  #if a SHTC3 temperature and humidity sensor is present read both values.     
-        if(sht.device.i2c_error == 0):
+            print("SI7021 I/O Error - retrying")
+
+    if(sht_attached):                  #if a SHTC3 temperature and humidity sensor is present read both values.
+        try:
             temperature2, humidity2 = sht.measurements
             print("temperature: {}  Relative_humidity {}  ".format(temperature2, humidity2), end = '')
-        else:                         #if no SHTC3 detected then complain and reinitialise the sensor.
+        except OSError:      #if we get an error during I/O retry the connection
             temperature2 = 0
             humidity2 = 0
-            print("no temp2")
-            print(sht.device.i2c_error, hex(sht.device.i2c_error_device))
-            sht = shtc3.SHTC3(i2c, sht_addr)
-    print("")
-    sleep(0.1)     #give the bus a rest before reading again. You can omit this for maximum data throughput.
+            print("SHTC3 I/O Error - retrying")
+            
+    print(end='\r')
+    sleep(0.25)     #give the bus a rest before reading again. You can omit this for maximum data throughput.
     
     

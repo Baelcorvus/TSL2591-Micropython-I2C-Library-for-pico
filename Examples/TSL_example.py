@@ -18,26 +18,30 @@ i2c=machine.I2C(i2c_bus, sda=sdaPIN, scl=sclPIN, freq=400000)
 lux_addr = 0x29
 
 '''and finnaly set up the sensor object that will always talk to the sensor'''
-tsl = TSL2591.TSL2591(i2c, lux_addr)
+try:
+    tsl = TSL2591.TSL2591(i2c, lux_addr)
+    chip_id = tsl._chip_id
+    if (chip_id== 0x50):
+        identifier = "TSL2591"
+    else:
+        identifier = "other sensor"
+except OSError:
+    print ("TSL2591 not present")
+else:
+    print('{} is present'.format(identifier))
 
 while True:
-    if(tsl.device.i2c_error == 0):
+    try:
         lux = tsl.lux                                              #read the lux value
         infrared = tsl.infrared                                    #read the infrared value
         visible = tsl.visible                                      #read the visible value
         full_spectrum = tsl.full_spectrum                          #read the full_spectrum value
                                                                    #the most useful value for many projects is the lux value.
-    else:                                                   #simple error checking. If no device is found the porperty tsl.device.i2c_error will be not zero.
-        lux = 0                                             #if it is not zero, complain and attempt to reinitialise the object, settling the values to zero.
-        infrared = 0
-        visible = 0
-        full_spectrum = 0        
-        print("no lux")
-        print(tsl.device.i2c_error,hex( tsl.device.i2c_error_device))
-        tsl = TSL2591.TSL2591(i2c, lux_addr)
+        print("Lux: {}  ".format(lux), end = '')                   
+        print("Infrared: {}  ".format(infrared), end = '')
+        print("Visible: {}  ".format(visible), end = '')
+        print("Full Spectrum: {}  ".format(full_spectrum), end = '\r')
+    except OSError:
+        print("TSL2591 I/O Error - retrying connection")
 
-    print("Lux: {}  ".format(lux), end = '')                   
-    print("Infrared: {}  ".format(infrared), end = '')
-    print("Visible: {}  ".format(visible), end = '')
-    print("Full Spectrum: {}  ".format(full_spectrum))
-    sleep(0.5)                                           #read every half second - not necessary for the bus, just cosmetic, omit as needed
+    sleep(0.1)                                           #read every half second - not necessary ofr the bus, just cosmetic, omit as needed
